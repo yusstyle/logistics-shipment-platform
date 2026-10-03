@@ -1,0 +1,1186 @@
+Build a complete, production-ready logistics and shipment tracking platform from scratch.
+
+IMPORTANT: Do not give me a partial implementation, mockup, pseudocode, or tutorial. Build the actual working application and all required frontend, backend, database, authentication, API integration, admin dashboard, tracking system, validation, error handling, responsive UI, and deployment configuration.
+
+The application must be professional, mature, trustworthy, fast, secure, and realistic. It must NOT look like a generic AI-generated template.
+
+==================================================
+
+1. PROJECT OBJECTIVE
+   ==================================================
+
+Build a modern logistics/shipping company platform with:
+
+1. Public corporate website
+2. Shipment tracking page
+3. Customer quote/request system
+4. Customer account system
+5. Secure admin dashboard
+6. Shipment management
+7. Tracking-event management
+8. Real carrier tracking integration using 17TRACK API
+9. Customer management
+10. Quote management
+11. Notifications
+12. Contact/inquiry management
+13. Dashboard analytics
+14. Role-based administration
+15. Audit logging
+16. Secure API architecture
+17. Responsive mobile/tablet/desktop experience
+
+The system must be designed so that a legitimate logistics company can operate it.
+
+Do not fabricate carrier tracking data.
+
+If 17TRACK credentials are unavailable during development, implement the complete integration layer using environment variables and a clearly documented development/mock mode. Do NOT hard-code fake API credentials.
+
+==================================================
+2. TECHNOLOGY STACK
+===================
+
+Use a modern production-ready stack.
+
+Frontend:
+
+* React
+* TypeScript
+* Tailwind CSS
+* shadcn/ui where appropriate
+* Framer Motion for animations
+* Lucide icons
+
+Backend:
+
+* Node.js
+* TypeScript
+* Express or a clean equivalent backend framework
+
+Database:
+
+* PostgreSQL
+* Drizzle ORM
+
+Authentication:
+
+* Secure session-based authentication or a properly implemented JWT/session architecture
+* Password hashing with Argon2 or bcrypt
+* HTTP-only secure cookies where appropriate
+* CSRF protection where applicable
+* Role-based authorization
+
+External services:
+
+* 17TRACK API for legitimate carrier tracking
+* Email provider through environment variables
+* Optional object/file storage through environment variables
+
+Deployment:
+
+* Make the application compatible with Replit deployment
+* Use environment variables for all secrets
+* Do not expose secrets in frontend code
+
+==================================================
+3. APPLICATION STRUCTURE
+========================
+
+Create a clean structure similar to:
+
+/client
+/server
+/shared
+/db
+/components
+/pages
+/hooks
+/lib
+/services
+/middleware
+/routes
+/types
+/scripts
+
+Organize the code professionally.
+
+Separate:
+
+* UI
+* business logic
+* API routes
+* database access
+* authentication
+* external integrations
+* validation
+* utilities
+
+Do not put everything into one huge file.
+
+==================================================
+4. PUBLIC WEBSITE
+=================
+
+Create a professional logistics company website.
+
+Pages:
+
+/
+/about
+/services
+/services/air-freight
+/services/ocean-freight
+/services/road-freight
+/services/warehousing
+/services/packaging
+/tracking
+/quote
+/contact
+/login
+/register
+
+The homepage should contain:
+
+Hero section:
+
+* Strong logistics headline
+* Short professional description
+* Shipment tracking input
+* "Track Shipment" CTA
+* "Request a Quote" CTA
+
+Services section:
+
+* Air Freight
+* Ocean Freight
+* Road Freight
+* Warehousing
+* Packaging
+* Supply Chain / Logistics
+
+How It Works:
+
+1. Book shipment
+2. Shipment processed
+3. Shipment moves through logistics network
+4. Customer tracks shipment
+5. Delivery completed
+
+Global coverage section.
+
+Trust/security section.
+
+Statistics section, but ONLY use statistics that are actually configured in the admin system or provided as legitimate company data. Do not invent impressive numbers.
+
+Testimonials:
+Create the component, but use clearly configurable content. Do not insert fake testimonials pretending to be real customers.
+
+FAQ section.
+
+Contact section.
+
+Footer:
+
+* Company information
+* Services
+* Tracking
+* Contact
+* Privacy Policy
+* Terms
+* Social links
+
+==================================================
+5. TRACKING SYSTEM
+==================
+
+Create a professional tracking page.
+
+Customer enters:
+
+Tracking Number
+
+Example format:
+
+TRK-2026-000001
+
+Do not assume this example represents a real shipment.
+
+After submission:
+
+Frontend
+↓
+Backend API
+↓
+Internal shipment record
+↓
+17TRACK integration when a carrier tracking number is available
+↓
+Carrier tracking information
+↓
+Normalized response
+↓
+Customer tracking UI
+
+The tracking page should show:
+
+* Tracking number
+* Shipment status
+* Origin
+* Destination
+* Current location
+* Carrier
+* Service type
+* Shipment date
+* Estimated delivery date
+* Last update
+* Tracking timeline
+* Shipment history
+* Package information where available
+
+Timeline example:
+
+Shipment Created
+↓
+Picked Up
+↓
+In Transit
+↓
+Arrived at Facility
+↓
+Out for Delivery
+↓
+Delivered
+
+Only display events actually returned by the carrier/provider or events legitimately entered by authorized administrators.
+
+Clearly distinguish:
+
+* Carrier events
+* Internal logistics events
+
+==================================================
+6. 17TRACK INTEGRATION
+======================
+
+Create a dedicated service:
+
+/server/services/tracking/17track.ts
+
+Use environment variables such as:
+
+TRACKING_PROVIDER=17track
+TRACKING_API_KEY=
+
+Never expose the API key to the browser.
+
+Create a tracking service abstraction:
+
+TrackingProvider
+
+* trackShipment()
+* registerTracking()
+* getTrackingStatus()
+* normalizeEvents()
+
+The system should be designed so another tracking provider can be added later without rewriting the entire application.
+
+Implement:
+
+* API authentication
+* request validation
+* timeout handling
+* retries where appropriate
+* rate-limit handling
+* error handling
+* response normalization
+* webhook support if supported by the selected 17TRACK API plan
+* synchronization of tracking events
+* logging without exposing secrets
+
+Do not make assumptions about undocumented 17TRACK endpoints.
+
+Use the official 17TRACK API documentation when implementing the actual integration.
+
+If the API credentials are missing:
+
+* application must still run
+* show a configuration warning in development/admin settings
+* use a clearly marked mock provider only for development
+* never present mock data as genuine carrier tracking
+
+==================================================
+7. DATABASE DESIGN
+==================
+
+Create PostgreSQL migrations and schema.
+
+Tables should include at minimum:
+
+users
+
+* id
+* name
+* email
+* passwordHash
+* role
+* status
+* createdAt
+* updatedAt
+* lastLoginAt
+
+roles/permissions if needed.
+
+customers
+
+* id
+* userId
+* phone
+* address
+* country
+* createdAt
+* updatedAt
+
+shipments
+
+* id
+* trackingNumber
+* customerId
+* carrier
+* carrierTrackingNumber
+* serviceType
+* origin
+* destination
+* currentLocation
+* status
+* weight
+* dimensions
+* packageDescription
+* estimatedDelivery
+* actualDelivery
+* createdAt
+* updatedAt
+
+tracking_events
+
+* id
+* shipmentId
+* source
+* status
+* location
+* description
+* eventTimestamp
+* createdAt
+
+quotes
+
+* id
+* customerName
+* email
+* phone
+* origin
+* destination
+* shipmentType
+* weight
+* dimensions
+* description
+* status
+* adminNotes
+* createdAt
+* updatedAt
+
+contacts
+
+* id
+* name
+* email
+* phone
+* subject
+* message
+* status
+* createdAt
+
+notifications
+
+* id
+* userId
+* type
+* title
+* message
+* readAt
+* createdAt
+
+audit_logs
+
+* id
+* userId
+* action
+* entityType
+* entityId
+* metadata
+* ipAddress
+* createdAt
+
+site_settings
+
+* id
+* key
+* value
+* updatedAt
+
+Add appropriate:
+
+* indexes
+* foreign keys
+* unique constraints
+* timestamps
+* cascading behavior
+* database validation
+
+Tracking numbers must be unique.
+
+==================================================
+8. ADMIN DASHBOARD
+==================
+
+Create:
+
+/admin
+
+Require authentication.
+
+Create a polished dashboard with:
+
+Overview:
+
+* Total shipments
+* Active shipments
+* Delivered shipments
+* Pending quotes
+* Registered customers
+* Recent tracking activity
+
+Charts:
+
+* Shipment volume
+* Shipment status distribution
+* Quote requests
+* Delivery activity
+
+Admin navigation:
+
+Dashboard
+Shipments
+Tracking
+Customers
+Quotes
+Messages
+Users
+Notifications
+Analytics
+Audit Logs
+Site Settings
+Profile
+Logout
+
+==================================================
+9. SHIPMENT MANAGEMENT
+======================
+
+Admin can:
+
+Create shipment
+Edit shipment
+View shipment
+Search shipment
+Filter shipment
+Delete/cancel shipment where appropriate
+Update shipment status
+Add internal tracking events
+View carrier events
+Synchronize carrier tracking
+Assign customer
+Assign carrier
+Set destination
+Set estimated delivery
+Add package details
+
+Creation form must validate all required fields.
+
+Generate a unique internal tracking number.
+
+Example:
+
+TRK-2026-XXXXXX
+
+Do not claim this number exists with a carrier unless it actually does.
+
+==================================================
+10. TRACKING DETAILS ADMIN PAGE
+===============================
+
+When admin opens a shipment:
+
+Display:
+
+Shipment information
+Customer information
+Carrier information
+Internal events
+Carrier events
+Synchronization status
+API/provider status
+Audit history
+
+Buttons:
+
+Sync Tracking
+Add Event
+Edit Shipment
+Cancel Shipment
+
+If Sync Tracking fails, clearly explain why.
+
+Do not silently create fake events.
+
+==================================================
+11. CUSTOMER DASHBOARD
+======================
+
+Create:
+
+/dashboard
+
+Customers should be able to:
+
+* View their shipments
+* View tracking
+* View shipment history
+* Submit quote requests
+* View quote status
+* Update profile
+* Receive notifications
+
+Customers must only be able to access their own records.
+
+==================================================
+12. QUOTE SYSTEM
+================
+
+Create a professional quote form.
+
+Fields:
+
+Full Name
+Email
+Phone
+Origin
+Destination
+Shipment Type
+Weight
+Dimensions
+Package Description
+Preferred Shipping Date
+Additional Information
+
+Admin receives the request.
+
+Admin can:
+
+* View quote
+* Add notes
+* Change quote status
+* Contact customer
+* Mark as processed
+
+Statuses:
+
+Pending
+Reviewing
+Quoted
+Accepted
+Rejected
+Completed
+
+==================================================
+13. AUTHENTICATION
+==================
+
+Implement secure authentication.
+
+Features:
+
+Registration
+Login
+Logout
+Password hashing
+Forgot password
+Password reset
+Session expiration
+Email verification if email provider is configured
+
+Roles:
+
+SUPER_ADMIN
+ADMIN
+STAFF
+CUSTOMER
+
+Permissions must be enforced on the server, not only hidden in the frontend.
+
+A CUSTOMER must never be able to call an admin endpoint successfully by manually changing the frontend request.
+
+==================================================
+14. ADMIN SECURITY
+==================
+
+Protect all admin routes.
+
+Implement:
+
+* Authentication middleware
+* Authorization middleware
+* Rate limiting
+* Input validation
+* SQL injection protection through ORM/parameterized queries
+* XSS protection
+* Secure cookies
+* CORS configuration
+* CSRF protection where applicable
+* Security headers
+* Request size limits
+* Audit logging
+* Password hashing
+* No sensitive data in logs
+
+Never expose:
+
+* database credentials
+* API keys
+* password hashes
+* private environment variables
+
+==================================================
+15. ADMIN UI / UX
+=================
+
+The UI must feel like a serious international logistics company.
+
+DO NOT make it look like:
+
+* a beginner project
+* a generic SaaS template
+* an AI-generated dashboard
+* a cryptocurrency website
+* an overly colorful startup landing page
+
+Use:
+
+* mature typography
+* strong hierarchy
+* excellent spacing
+* subtle gradients
+* professional cards
+* refined shadows
+* glass effects only where appropriate
+* clean tables
+* excellent forms
+* subtle motion
+* responsive layouts
+
+Color palette should be professional and configurable.
+
+Use a strong primary brand color with neutral backgrounds.
+
+==================================================
+16. 4D / DEPTH VISUAL EFFECT
+============================
+
+I want a sophisticated "4D" visual feeling.
+
+IMPORTANT:
+
+Do NOT create childish 3D effects.
+
+The 4D effect should mean:
+
+* depth
+* layered surfaces
+* perspective
+* parallax
+* smooth transitions
+* subtle 3D transforms
+* floating cards
+* dimensional shadows
+* mouse-based perspective effects
+* animated gradients
+* depth-aware hover states
+* layered hero graphics
+* smooth scroll animations
+
+Use Framer Motion and CSS transforms.
+
+For example:
+
+* Hero background layers move at different speeds.
+* Cards subtly rotate toward the cursor.
+* Tracking timeline has dimensional depth.
+* Dashboard cards have subtle elevation.
+* Buttons have restrained depth on hover.
+* Sections reveal smoothly during scrolling.
+
+Animations must remain performant.
+
+Respect:
+
+prefers-reduced-motion
+
+Users who disable animations must receive an accessible static version.
+
+==================================================
+17. RESPONSIVE DESIGN
+=====================
+
+Must work properly on:
+
+* Mobile
+* Tablet
+* Laptop
+* Desktop
+* Large desktop screens
+
+Do not simply shrink desktop UI.
+
+Create proper mobile navigation.
+
+Admin tables must have a usable mobile presentation.
+
+Forms must be easy to use on phones.
+
+==================================================
+18. ACCESSIBILITY
+=================
+
+Implement:
+
+* Semantic HTML
+* Keyboard navigation
+* Visible focus states
+* Accessible forms
+* Proper labels
+* ARIA where needed
+* Good contrast
+* Screen-reader friendly status messages
+* Reduced motion support
+
+==================================================
+19. SEO
+=======
+
+Implement:
+
+* Proper title tags
+* Meta descriptions
+* Open Graph metadata
+* Twitter/X metadata
+* Canonical URLs
+* robots.txt
+* sitemap.xml
+* Structured data where appropriate
+* Proper heading hierarchy
+
+Create SEO-friendly pages for services.
+
+==================================================
+20. ERROR HANDLING
+==================
+
+Every API endpoint must have proper error handling.
+
+Frontend should display friendly messages.
+
+Examples:
+
+"Tracking number not found."
+
+"Tracking provider is temporarily unavailable."
+
+"Unable to synchronize tracking information."
+
+"Please check your tracking number and try again."
+
+Do not expose stack traces to customers.
+
+Log technical errors securely on the server.
+
+==================================================
+21. API DOCUMENTATION
+=====================
+
+Create internal API documentation.
+
+Document endpoints such as:
+
+POST /api/auth/login
+POST /api/auth/register
+POST /api/auth/logout
+
+GET /api/shipments/:trackingNumber
+GET /api/customer/shipments
+
+POST /api/admin/shipments
+PATCH /api/admin/shipments/:id
+DELETE /api/admin/shipments/:id
+
+POST /api/admin/shipments/:id/sync
+POST /api/admin/shipments/:id/events
+
+GET /api/admin/customers
+GET /api/admin/quotes
+PATCH /api/admin/quotes/:id
+
+Include:
+
+* authentication requirements
+* request body
+* response format
+* validation errors
+* authorization requirements
+
+==================================================
+22. EMAIL / NOTIFICATIONS
+=========================
+
+Create a notification service abstraction.
+
+Support:
+
+Shipment created
+Shipment status changed
+Shipment delivered
+Quote received
+Quote status changed
+Password reset
+Account verification
+
+Email provider credentials must be environment variables.
+
+Create email templates with professional branding.
+
+Do not hard-code a specific email provider into the application architecture.
+
+==================================================
+23. AUDIT LOGGING
+=================
+
+Every sensitive admin action should create an audit record.
+
+Examples:
+
+Admin logged in
+Shipment created
+Shipment modified
+Shipment deleted
+Tracking event added
+Quote updated
+User role changed
+Site setting changed
+
+Record:
+
+user
+action
+entity
+entity ID
+timestamp
+IP where appropriate
+
+==================================================
+24. SETTINGS
+============
+
+Admin settings should allow authorized administrators to configure:
+
+Company name
+Company description
+Company email
+Phone
+Address
+Social media links
+Logo
+Favicon
+Primary brand color
+Tracking provider settings
+Email configuration
+Homepage statistics
+Service descriptions
+
+Do not allow dangerous configuration changes without authorization.
+
+==================================================
+25. FILE UPLOADS
+================
+
+If document uploads are implemented, support:
+
+* shipment documents
+* invoices
+* proof of delivery
+* customer documents
+
+Validate:
+
+* file type
+* file size
+* filename
+* access permissions
+
+Do not expose private documents publicly.
+
+==================================================
+26. SEARCH / FILTERING
+======================
+
+Admin shipment table must support:
+
+Search tracking number
+Search customer
+Search carrier
+Filter status
+Filter date
+Filter destination
+Sort by date
+Pagination
+
+Customer shipment list should also support useful filtering.
+
+==================================================
+27. PERFORMANCE
+===============
+
+Optimize:
+
+* database queries
+* indexes
+* API response sizes
+* frontend bundle
+* image loading
+* lazy loading
+* animations
+
+Avoid unnecessary API requests.
+
+Cache appropriate data.
+
+Do not poll the tracking provider continuously without respecting provider limits.
+
+Use webhooks where available and appropriate.
+
+==================================================
+28. REAL-TIME / SYNCHRONIZATION
+===============================
+
+Design the tracking system so that:
+
+17TRACK/carrier event
+↓
+Backend
+↓
+Normalize event
+↓
+Store event in PostgreSQL
+↓
+Update shipment status
+↓
+Notify customer
+↓
+Customer sees updated tracking
+
+Prevent duplicate tracking events.
+
+Use provider event IDs or another reliable deduplication mechanism when available.
+
+==================================================
+29. LEGAL / TRUST PAGES
+=======================
+
+Create:
+
+/privacy
+/terms
+/cookie-policy
+
+Do not copy another company's legal text.
+
+Use clearly marked placeholder content that the company can customize with its own legal information.
+
+==================================================
+30. SEED DATA
+=============
+
+Create development seed data.
+
+IMPORTANT:
+
+Seed data must be clearly marked as DEVELOPMENT/DEMO DATA.
+
+Never present demo shipments as real shipments.
+
+Create:
+
+* demo admin
+* demo staff
+* demo customer
+* demo shipments
+* demo quote
+
+Provide clear instructions for changing/removing seed credentials before production.
+
+==================================================
+31. ENVIRONMENT VARIABLES
+=========================
+
+Create a `.env.example`.
+
+Include placeholders such as:
+
+DATABASE_URL=
+SESSION_SECRET=
+TRACKING_PROVIDER=17track
+TRACKING_API_KEY=
+EMAIL_PROVIDER=
+EMAIL_API_KEY=
+APP_URL=
+
+Never put real secrets into source code.
+
+==================================================
+32. TESTING
+===========
+
+Create tests for:
+
+Authentication
+Authorization
+Shipment creation
+Tracking lookup
+Tracking synchronization
+Customer isolation
+Admin permissions
+Quote submission
+Quote management
+Validation
+API error handling
+
+Make sure:
+
+Customer A cannot access Customer B's shipments.
+
+Staff cannot perform SUPER_ADMIN-only actions.
+
+Unauthenticated users cannot access admin APIs.
+
+==================================================
+33. DEPLOYMENT
+==============
+
+Make the application deployment-ready.
+
+Include:
+
+* package scripts
+* database migration scripts
+* seed scripts
+* production build
+* environment variable documentation
+* Replit deployment configuration where needed
+
+Commands should include equivalents for:
+
+npm install
+npm run dev
+npm run build
+npm run start
+npm run db:migrate
+npm run db:seed
+
+==================================================
+34. FINAL QUALITY CHECK
+=======================
+
+Before considering the project complete:
+
+1. Run the application.
+2. Check all routes.
+3. Check database connection.
+4. Run migrations.
+5. Run seed data.
+6. Test login.
+7. Test admin dashboard.
+8. Test customer dashboard.
+9. Test shipment creation.
+10. Test tracking lookup.
+11. Test tracking provider integration.
+12. Test quote submission.
+13. Test authorization.
+14. Test mobile responsiveness.
+15. Check browser console for errors.
+16. Check server logs for errors.
+17. Check TypeScript errors.
+18. Check accessibility basics.
+19. Check SEO metadata.
+20. Check that no secrets are exposed.
+
+Fix all errors you find.
+
+Do not simply tell me that something needs to be implemented. IMPLEMENT IT.
+
+==================================================
+35. IMPORTANT DEVELOPMENT RULE
+==============================
+
+When you encounter an API whose exact current endpoint/request format is not known, do not invent the endpoint.
+
+Use the official provider documentation and implement the documented API.
+
+For 17TRACK, keep the integration isolated inside the tracking provider service so the rest of the application does not depend directly on provider-specific code.
+
+==================================================
+36. FINAL DELIVERABLE
+=====================
+
+At the end, provide:
+
+1. Complete working source code
+2. Database schema
+3. Database migrations
+4. Seed script
+5. API routes
+6. Admin dashboard
+7. Customer dashboard
+8. Public website
+9. Tracking system
+10. 17TRACK integration
+11. Authentication
+12. Authorization
+13. Notifications
+14. Audit logging
+15. Tests
+16. `.env.example`
+17. README
+18. Deployment instructions
+
+The finished product must feel like a real professional logistics technology platform—not a student demo.
+
+Prioritize:
+SECURITY
+RELIABILITY
+REAL DATA
+MAINTAINABILITY
+PERFORMANCE
+ACCESSIBILITY
+PROFESSIONAL UI/UX
+RESPONSIVE DESIGN
+SUBTLE 4D DEPTH EFFECTS
+
+Do not use fake carrier information or fake real-world company claims.
+
+Build the application completely.

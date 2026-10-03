@@ -1,22 +1,22 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
+  # Do not change the title; it controls generated filenames.
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Public shipment tracking and logistics operations API.
 servers:
   - url: /api
-    description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: public
+  - name: customer
+  - name: admin
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +24,830 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /site:
+    get:
+      operationId: getSiteSettings
+      tags: [public]
+      summary: Get public company settings
+      responses:
+        "200":
+          description: Company details and configurable content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+  /tracking/{trackingNumber}:
+    get:
+      operationId: getPublicTracking
+      tags: [public]
+      summary: Get public shipment tracking details
+      parameters:
+        - name: trackingNumber
+          in: path
+          required: true
+          schema: { type: string, minLength: 4, maxLength: 64 }
+      responses:
+        "200":
+          description: Shipment and tracking history without customer-identifying data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingResult"
+        "404":
+          description: Tracking number not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /quotes:
+    post:
+      operationId: createQuote
+      tags: [public]
+      summary: Submit a quote request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteInput"
+      responses:
+        "201":
+          description: Quote received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+        "400":
+          description: Invalid quote request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /contacts:
+    post:
+      operationId: createContact
+      tags: [public]
+      summary: Submit a contact inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Inquiry received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+  /me:
+    get:
+      operationId: getCurrentUser
+      tags: [customer]
+      summary: Get the signed-in user's profile
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Current profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateCurrentUser
+      tags: [customer]
+      summary: Update the signed-in user's profile
+      security: [{ clerkSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /customer/shipments:
+    get:
+      operationId: getCustomerShipments
+      tags: [customer]
+      summary: List only the signed-in customer's shipments
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Shipments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Shipment" }
+  /customer/quotes:
+    get:
+      operationId: getCustomerQuotes
+      tags: [customer]
+      summary: List only the signed-in customer's quote requests
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Quote requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Quote" }
+  /customer/notifications:
+    get:
+      operationId: getCustomerNotifications
+      tags: [customer]
+      summary: List only the signed-in user's notifications
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Notification" }
+  /customer/notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [customer]
+      summary: Mark an owned notification as read
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Get live operational counts and recent tracking activity
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Dashboard calculated from saved records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /admin/shipments:
+    get:
+      operationId: getAdminShipments
+      tags: [admin]
+      summary: Search and filter shipments
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: destination
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+      responses:
+        "200":
+          description: Paginated shipments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipmentPage"
+    post:
+      operationId: createShipment
+      tags: [admin]
+      summary: Create shipment with a unique internal tracking number
+      security: [{ clerkSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentInput"
+      responses:
+        "201":
+          description: Created shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+  /admin/shipments/{id}:
+    get:
+      operationId: getAdminShipment
+      tags: [admin]
+      summary: Get shipment details and full event history
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Shipment and events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipmentDetail"
+    patch:
+      operationId: updateShipment
+      tags: [admin]
+      summary: Update shipment details
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentUpdate"
+      responses:
+        "200":
+          description: Updated shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shipment"
+  /admin/shipments/{id}/events:
+    post:
+      operationId: createTrackingEvent
+      tags: [admin]
+      summary: Add an internal logistics event
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackingEventInput"
+      responses:
+        "201":
+          description: Added event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingEvent"
+  /admin/shipments/{id}/sync:
+    post:
+      operationId: syncShipmentTracking
+      tags: [admin]
+      summary: Register and synchronize with the configured carrier tracking provider
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Synchronization result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
+        "503":
+          description: Provider is not configured or is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /admin/quotes:
+    get:
+      operationId: getAdminQuotes
+      tags: [admin]
+      summary: Search and filter quote requests
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Quote requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Quote" }
+  /admin/quotes/{id}:
+    patch:
+      operationId: updateQuote
+      tags: [admin]
+      summary: Update quote status and private notes
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuoteUpdate"
+      responses:
+        "200":
+          description: Updated quote
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quote"
+  /admin/customers:
+    get:
+      operationId: getAdminCustomers
+      tags: [admin]
+      summary: Search customer accounts
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/User" }
+  /admin/contacts:
+    get:
+      operationId: getAdminContacts
+      tags: [admin]
+      summary: List contact inquiries
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Inquiries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Contact" }
+  /admin/contacts/{id}:
+    patch:
+      operationId: updateContact
+      tags: [admin]
+      summary: Update contact inquiry status
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactUpdate"
+      responses:
+        "200":
+          description: Updated inquiry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: List user roles and accounts
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: User accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/User" }
+  /admin/users/{id}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [admin]
+      summary: Change a user role (super admin only)
+      security: [{ clerkSession: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /admin/audit:
+    get:
+      operationId: getAdminAuditLogs
+      tags: [admin]
+      summary: View administrative audit records
+      security: [{ clerkSession: [] }]
+      responses:
+        "200":
+          description: Audit records
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AuditLog" }
+  /admin/site:
+    patch:
+      operationId: updateSiteSettings
+      tags: [admin]
+      summary: Update configurable company website content
+      security: [{ clerkSession: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
 components:
+  securitySchemes:
+    clerkSession:
+      type: http
+      scheme: bearer
+      description: Authenticated Clerk browser session (same-origin cookie).
   schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+    TrackingEvent:
+      type: object
+      required: [id, source, status, description, eventTimestamp]
+      properties:
+        id: { type: integer }
+        source: { type: string, enum: [internal, carrier] }
+        sourceEventId: { type: ["string", "null"] }
+        status: { type: string }
+        location: { type: ["string", "null"] }
+        description: { type: string }
+        eventTimestamp: { type: string, format: date-time }
+    TrackingEventInput:
+      type: object
+      required: [status, description, eventTimestamp]
+      properties:
+        status: { type: string, minLength: 2, maxLength: 80 }
+        location: { type: ["string", "null"], maxLength: 160 }
+        description: { type: string, minLength: 2, maxLength: 500 }
+        eventTimestamp: { type: string, format: date-time }
+    Shipment:
+      type: object
+      required: [id, trackingNumber, serviceType, origin, destination, status, isDemo, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        trackingNumber: { type: string }
+        customerId: { type: ["integer", "null"] }
+        customerName: { type: ["string", "null"] }
+        carrier: { type: ["string", "null"] }
+        carrierTrackingNumber: { type: ["string", "null"] }
+        serviceType: { type: string }
+        origin: { type: string }
+        destination: { type: string }
+        currentLocation: { type: ["string", "null"] }
+        status: { type: string }
+        weight: { type: ["number", "null"] }
+        dimensions: { type: ["string", "null"] }
+        packageDescription: { type: ["string", "null"] }
+        estimatedDelivery: { type: ["string", "null"], format: date }
+        actualDelivery: { type: ["string", "null"], format: date }
+        isDemo: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ShipmentDetail:
+      type: object
+      required: [shipment, events]
+      properties:
+        shipment: { $ref: "#/components/schemas/Shipment" }
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/TrackingEvent" }
+    TrackingResult:
+      allOf:
+        - $ref: "#/components/schemas/ShipmentDetail"
+    ShipmentInput:
+      type: object
+      required: [serviceType, origin, destination]
+      properties:
+        customerId: { type: ["integer", "null"] }
+        carrier: { type: ["string", "null"], maxLength: 100 }
+        carrierTrackingNumber: { type: ["string", "null"], maxLength: 100 }
+        serviceType: { type: string, minLength: 2, maxLength: 80 }
+        origin: { type: string, minLength: 2, maxLength: 180 }
+        destination: { type: string, minLength: 2, maxLength: 180 }
+        status: { type: string, default: "Shipment created" }
+        weight: { type: ["number", "null"], minimum: 0 }
+        dimensions: { type: ["string", "null"], maxLength: 100 }
+        packageDescription: { type: ["string", "null"], maxLength: 500 }
+        estimatedDelivery: { type: ["string", "null"], format: date }
+    ShipmentUpdate:
+      type: object
+      properties:
+        customerId: { type: ["integer", "null"] }
+        carrier: { type: ["string", "null"], maxLength: 100 }
+        carrierTrackingNumber: { type: ["string", "null"], maxLength: 100 }
+        serviceType: { type: string, minLength: 2, maxLength: 80 }
+        origin: { type: string, minLength: 2, maxLength: 180 }
+        destination: { type: string, minLength: 2, maxLength: 180 }
+        currentLocation: { type: ["string", "null"], maxLength: 180 }
+        status: { type: string, maxLength: 80 }
+        weight: { type: ["number", "null"], minimum: 0 }
+        dimensions: { type: ["string", "null"], maxLength: 100 }
+        packageDescription: { type: ["string", "null"], maxLength: 500 }
+        estimatedDelivery: { type: ["string", "null"], format: date }
+        actualDelivery: { type: ["string", "null"], format: date }
+    ShipmentPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Shipment" }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    Quote:
+      type: object
+      required: [id, customerName, email, origin, destination, shipmentType, status, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        customerId: { type: ["integer", "null"] }
+        customerName: { type: string }
+        email: { type: string, format: email }
+        phone: { type: ["string", "null"] }
+        origin: { type: string }
+        destination: { type: string }
+        shipmentType: { type: string }
+        weight: { type: ["number", "null"] }
+        dimensions: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        preferredShippingDate: { type: ["string", "null"], format: date }
+        additionalInformation: { type: ["string", "null"] }
+        status: { type: string, enum: [pending, reviewing, quoted, accepted, rejected, completed] }
+        adminNotes: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    QuoteInput:
+      type: object
+      required: [customerName, email, origin, destination, shipmentType]
+      properties:
+        customerName: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email, maxLength: 320 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        origin: { type: string, minLength: 2, maxLength: 180 }
+        destination: { type: string, minLength: 2, maxLength: 180 }
+        shipmentType: { type: string, minLength: 2, maxLength: 80 }
+        weight: { type: ["number", "null"], minimum: 0 }
+        dimensions: { type: ["string", "null"], maxLength: 100 }
+        description: { type: ["string", "null"], maxLength: 500 }
+        preferredShippingDate: { type: ["string", "null"], format: date }
+        additionalInformation: { type: ["string", "null"], maxLength: 2000 }
+    QuoteUpdate:
+      type: object
+      properties:
+        status: { type: string, enum: [pending, reviewing, quoted, accepted, rejected, completed] }
+        adminNotes: { type: ["string", "null"], maxLength: 4000 }
+    Contact:
+      type: object
+      required: [id, name, email, subject, message, status, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: ["string", "null"] }
+        subject: { type: string }
+        message: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+    ContactInput:
+      type: object
+      required: [name, email, subject, message]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email, maxLength: 320 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        subject: { type: string, minLength: 2, maxLength: 160 }
+        message: { type: string, minLength: 5, maxLength: 4000 }
+    ContactUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [new, in_progress, closed] }
+    User:
+      type: object
+      required: [id, clerkUserId, name, email, role, status, createdAt]
+      properties:
+        id: { type: integer }
+        clerkUserId: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, enum: [super_admin, admin, staff, customer] }
+        status: { type: string, enum: [active, disabled] }
+        phone: { type: ["string", "null"] }
+        address: { type: ["string", "null"] }
+        country: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    ProfileUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        phone: { type: ["string", "null"], maxLength: 40 }
+        address: { type: ["string", "null"], maxLength: 250 }
+        country: { type: ["string", "null"], maxLength: 100 }
+    RoleUpdate:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string, enum: [admin, staff, customer] }
+    Notification:
+      type: object
+      required: [id, type, title, message, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        message: { type: string }
+        readAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    AuditLog:
+      type: object
+      required: [id, action, entityType, createdAt]
+      properties:
+        id: { type: integer }
+        userName: { type: ["string", "null"] }
+        action: { type: string }
+        entityType: { type: string }
+        entityId: { type: ["string", "null"] }
+        metadata: { type: ["object", "null"], additionalProperties: true }
+        ipAddress: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+    Dashboard:
+      type: object
+      required: [totalShipments, activeShipments, deliveredShipments, pendingQuotes, customerCount, recentEvents, statusCounts, providerConfigured]
+      properties:
+        totalShipments: { type: integer }
+        activeShipments: { type: integer }
+        deliveredShipments: { type: integer }
+        pendingQuotes: { type: integer }
+        customerCount: { type: integer }
+        providerConfigured: { type: boolean }
+        recentEvents:
+          type: array
+          items:
+            type: object
+            required: [trackingNumber, status, description, eventTimestamp, source]
+            properties:
+              trackingNumber: { type: string }
+              status: { type: string }
+              description: { type: string }
+              eventTimestamp: { type: string, format: date-time }
+              source: { type: string }
+        statusCounts:
+          type: array
+          items:
+            type: object
+            required: [status, count]
+            properties:
+              status: { type: string }
+              count: { type: integer }
+    SyncResult:
+      type: object
+      required: [configured, registered, eventCount, message]
+      properties:
+        configured: { type: boolean }
+        registered: { type: boolean }
+        eventCount: { type: integer }
+        message: { type: string }
+    SiteSettings:
+      type: object
+      required: [companyName, companyDescription, companyEmail, companyPhone, address, primaryColor, statistics, services, testimonials]
+      properties:
+        companyName: { type: string }
+        companyDescription: { type: string }
+        companyEmail: { type: string }
+        companyPhone: { type: string }
+        address: { type: string }
+        primaryColor: { type: string }
+        website: { type: string }
+        socialLinks: { type: object, additionalProperties: { type: string } }
+        statistics:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: string }
+        services:
+          type: array
+          items:
+            type: object
+            required: [slug, title, description]
+            properties:
+              slug: { type: string }
+              title: { type: string }
+              description: { type: string }
+        testimonials:
+          type: array
+          items:
+            type: object
+            required: [quote, author, company]
+            properties:
+              quote: { type: string }
+              author: { type: string }
+              company: { type: string }
+    SiteSettingsUpdate:
+      type: object
+      properties:
+        companyName: { type: string, maxLength: 160 }
+        companyDescription: { type: string, maxLength: 1200 }
+        companyEmail: { type: string, maxLength: 320 }
+        companyPhone: { type: string, maxLength: 80 }
+        address: { type: string, maxLength: 300 }
+        primaryColor: { type: string, pattern: "^#[0-9A-Fa-f]{6}$" }
+        website: { type: string, maxLength: 300 }
+        socialLinks: { type: object, additionalProperties: { type: string } }
+        statistics:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string }
+              value: { type: string }
+        services:
+          type: array
+          items:
+            type: object
+            required: [slug, title, description]
+            properties:
+              slug: { type: string }
+              title: { type: string }
+              description: { type: string }
+        testimonials:
+          type: array
+          items:
+            type: object
+            required: [quote, author, company]
+            properties:
+              quote: { type: string }
+              author: { type: string }
+              company: { type: string }
