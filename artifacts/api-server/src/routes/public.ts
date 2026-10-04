@@ -20,6 +20,7 @@ import {
 } from "@workspace/db";
 import { parseRequest } from "../lib/validation";
 import {
+  dateToSql,
   eventDto,
   notificationDto,
   quoteDto,
@@ -101,6 +102,7 @@ router.post("/quotes", publicFormLimit, async (req, res, next) => {
         ...input,
         customerId: customer?.id ?? null,
         weight: input.weight == null ? null : String(input.weight),
+        preferredShippingDate: dateToSql(input.preferredShippingDate),
       })
       .returning();
     res.status(201).json(quoteDto(quote));

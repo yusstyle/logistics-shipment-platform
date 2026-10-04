@@ -49,6 +49,7 @@ import {
   eventDto,
   notificationDto,
   quoteDto,
+  dateToSql,
   shipmentDto,
   userDto,
   writeAudit,
@@ -237,6 +238,8 @@ router.post("/admin/shipments", ...adminOnly, async (req, res, next) => {
           ...input,
           trackingNumber: makeTrackingNumber(),
           weight: input.weight == null ? null : String(input.weight),
+          estimatedDelivery: dateToSql(input.estimatedDelivery),
+          actualDelivery: dateToSql(input.actualDelivery),
         })
         .returning();
       await tx.insert(trackingEventsTable).values({
@@ -335,6 +338,8 @@ router.patch(
             ...(input.weight === undefined
               ? {}
               : { weight: input.weight === null ? null : String(input.weight) }),
+            estimatedDelivery: dateToSql(input.estimatedDelivery),
+            actualDelivery: dateToSql(input.actualDelivery),
             updatedAt: new Date(),
           })
           .where(eq(shipmentsTable.id, existing.id))

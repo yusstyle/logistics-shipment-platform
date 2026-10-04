@@ -25,6 +25,11 @@ export function shipmentDto(shipment: Shipment, customerName: string | null = nu
   };
 }
 
+export function dateToSql(value: Date | null | undefined) {
+  if (value === undefined || value === null) return value;
+  return value.toISOString().slice(0, 10);
+}
+
 export function quoteDto(quote: Quote) {
   return {
     ...quote,
