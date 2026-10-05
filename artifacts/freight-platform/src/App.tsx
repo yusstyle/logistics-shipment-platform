@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { ClerkProvider, SignIn, SignUp, useAuth, useClerk, useUser } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
@@ -32,6 +32,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
+const TrackingMap = lazy(() => import('@/components/tracking-map').then(module => ({ default: module.TrackingMap })));
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -205,6 +206,7 @@ function TrackingPage() {
       {tracking.isError && lookup && <ErrorNotice message="We could not find tracking details for that reference. Check the number or contact the team." retry={() => tracking.refetch()} />}
       {tracking.data && <section className="panel" style={{ marginTop: 24 }}><div className="panel-title"><div><Eyebrow>Shipment / {tracking.data.shipment.trackingNumber}</Eyebrow><h2 style={{ marginTop: 9 }}>{tracking.data.shipment.origin} <ArrowRight size={16} /> {tracking.data.shipment.destination}</h2></div><StatusBadge status={tracking.data.shipment.status} /></div>
         <p style={{ color: '#66757b', fontSize: 12 }}>Service: {tracking.data.shipment.serviceType} · Last known location: {tracking.data.shipment.currentLocation || 'Not available'}{tracking.data.shipment.isDemo ? ' · Development record' : ''}</p>
+        <Suspense fallback={<div className="map-unavailable">Preparing the location map...</div>}><TrackingMap origin={tracking.data.shipment.origin} currentLocation={tracking.data.shipment.currentLocation} destination={tracking.data.shipment.destination} /></Suspense>
         {!tracking.data.events.length ? <Empty title="No tracking events yet" body="An update will appear here when the shipment has an event." /> : <div className="timeline" style={{ marginTop: 30 }}>{tracking.data.events.map(event => <div className="timeline-item" key={event.id} data-testid={`event-tracking-${event.id}`}><span className="timeline-mark" /><div><strong>{event.status}</strong><p>{event.description}{event.location ? ` · ${event.location}` : ''}</p><time>{new Date(event.eventTimestamp).toLocaleString()} · {event.source}</time></div></div>)}</div>}</section>}
     </div></PublicShell>;
 }
