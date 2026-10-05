@@ -67,7 +67,7 @@ router.get("/tracking/:trackingNumber", trackingLimit, async (req, res, next) =>
     );
     if (!params) return;
     const shipment = await db.query.shipmentsTable.findFirst({
-      where: eq(shipmentsTable.trackingNumber, params.trackingNumber),
+      where: eq(shipmentsTable.trackingNumber, params.trackingNumber.trim().toUpperCase()),
     });
     if (!shipment) {
       res.status(404).json({ error: "No shipment was found for that tracking number." });
