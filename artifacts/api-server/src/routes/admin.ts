@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+﻿import { randomBytes } from "node:crypto";
 import {
   and,
   count,
@@ -239,7 +239,6 @@ router.post("/admin/shipments", ...adminOnly, async (req, res, next) => {
           trackingNumber: makeTrackingNumber(),
           weight: input.weight == null ? null : String(input.weight),
           estimatedDelivery: dateToSql(input.estimatedDelivery),
-          actualDelivery: dateToSql(input.actualDelivery),
         })
         .returning();
       await tx.insert(trackingEventsTable).values({
@@ -335,6 +334,7 @@ router.patch(
           .update(shipmentsTable)
           .set({
             ...input,
+            weight: undefined,
             ...(input.weight === undefined
               ? {}
               : { weight: input.weight === null ? null : String(input.weight) }),
