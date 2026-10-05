@@ -63941,8 +63941,11 @@ router3.get("/tracking/:trackingNumber", trackingLimit, async (req, res, next) =
       res
     );
     if (!params) return;
+    const normalizedTrackingNumber = params.trackingNumber.trim().toLowerCase();
     const shipment = await db.query.shipmentsTable.findFirst({
-      where: eq(shipmentsTable.trackingNumber, params.trackingNumber)
+      where: sql`lower(${shipmentsTable.trackingNumber}) = ${normalizedTrackingNumber}`
+    }) ?? await db.query.shipmentsTable.findFirst({
+      where: sql`lower(${shipmentsTable.carrierTrackingNumber}) = ${normalizedTrackingNumber}`
     });
     if (!shipment) {
       res.status(404).json({ error: "No shipment was found for that tracking number." });
