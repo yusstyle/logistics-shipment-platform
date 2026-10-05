@@ -1,0 +1,9 @@
+{
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "cd artifacts/freight-platform && pnpm run build",
+  "outputDirectory": "artifacts/freight-platform/dist/public",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
