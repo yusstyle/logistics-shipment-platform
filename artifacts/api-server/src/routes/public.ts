@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import rateLimit from "express-rate-limit";
 import {
@@ -66,9 +66,14 @@ router.get("/tracking/:trackingNumber", trackingLimit, async (req, res, next) =>
       res,
     );
     if (!params) return;
-    const shipment = await db.query.shipmentsTable.findFirst({
-      where: eq(shipmentsTable.trackingNumber, params.trackingNumber.trim().toUpperCase()),
-    });
+    const normalizedTrackingNumber = params.trackingNumber.trim().toLowerCase();
+    const shipment =
+      (await db.query.shipmentsTable.findFirst({
+        where: sql`lower(${shipmentsTable.trackingNumber}) = ${normalizedTrackingNumber}`,
+      })) ??
+      (await db.query.shipmentsTable.findFirst({
+        where: sql`lower(${shipmentsTable.carrierTrackingNumber}) = ${normalizedTrackingNumber}`,
+      }));
     if (!shipment) {
       res.status(404).json({ error: "No shipment was found for that tracking number." });
       return;
