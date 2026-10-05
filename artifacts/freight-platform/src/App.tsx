@@ -338,6 +338,13 @@ function QueryState({ loading, error, retry, children }: { loading: boolean; err
   if (error) return <ErrorNotice message="The service could not load this data." retry={retry} />;
   return <>{children}</>;
 }
+function DashboardEntry() {
+  const me = useGetCurrentUser();
+  if (me.isLoading) return <main className="content"><LoadingBlock /></main>;
+  if (me.isError || !me.data) return <div className="content"><ErrorNotice message="Your workspace access could not be confirmed." retry={() => me.refetch()} /></div>;
+  if (['admin', 'staff', 'super_admin'].includes(me.data.role)) return <Redirect to="/admin" />;
+  return <CustomerDashboard />;
+}
 function CustomerDashboard() {
   const query = new URLSearchParams(window.location.search);
   const tab = query.get('tab') || 'overview';
@@ -559,7 +566,7 @@ function ClerkRoutes() {
       <Route path="/privacy" component={() => <LegalPage slug="privacy" />} />
       <Route path="/terms" component={() => <LegalPage slug="terms" />} />
       <Route path="/cookie-policy" component={() => <LegalPage slug="cookie-policy" />} />
-      <Route path="/dashboard" component={() => <Protected><CustomerDashboard /></Protected>} />
+      <Route path="/dashboard" component={() => <Protected><DashboardEntry /></Protected>} />
       <Route path="/admin" component={() => <Protected admin><AdminHome /></Protected>} />
       <Route path="/admin/shipments" component={() => <Protected admin><AdminShipments /></Protected>} />
       <Route path="/admin/shipments/new" component={() => <Protected admin><CreateShipmentPage /></Protected>} />
