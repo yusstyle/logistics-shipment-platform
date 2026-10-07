@@ -5,7 +5,7 @@ import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import {
   Activity, ArrowRight, Box, Check, FileClock, FileText,
-  LayoutDashboard, LifeBuoy, PackagePlus, Search, Settings, ShieldCheck, Truck, Users, X,
+  LayoutDashboard, LifeBuoy, MapPin, PackagePlus, Search, Settings, ShieldCheck, Truck, Users, X,
 } from 'lucide-react';
 import {
   Route, Switch, Link, Redirect, useLocation, Router as WouterRouter,
@@ -103,7 +103,7 @@ const adminNav: { label: string; href: string; icon: IconType }[] = [
 ];
 
 function Wordmark() {
-  return <span className="wordmark" data-testid="text-brand"><span className="mark" aria-hidden="true"><Box size={18} /></span><span>Freight operations</span></span>;
+  return <span className="wordmark" data-testid="text-brand"><img className="wordmark-logo" src={`${basePath}/logo.svg`} alt="GLO-PAX" aria-label="GLO-PAX" /><span>GLO-PAX</span></span>;
 }
 function Header() {
   return <header className="topbar">
@@ -114,22 +114,22 @@ function Header() {
       <Link href="/tracking" data-testid="link-tracking">Tracking</Link>
       <Link href="/contact" data-testid="link-contact">Contact</Link>
     </nav>
-    <div className="header-actions"><Link href="/sign-in" className="btn btn-quiet" data-testid="link-sign-in">Sign in</Link><Link href="/quote" className="btn btn-primary" data-testid="link-request-quote">Request a quote <ArrowRight size={15} /></Link></div>
+    <div className="header-actions"><Link href="/quote" className="btn btn-primary" data-testid="link-request-quote">Request a quote <ArrowRight size={15} /></Link></div>
   </header>;
 }
 function Footer() {
   const settings = useGetSiteSettings();
-  const company = settings.data?.companyName || 'Freight operations';
+  const company = settings.data?.companyName || 'GLO-PAX';
   return <footer className="footer"><div className="footer-inner">
-    <div><Wordmark /><p>Practical freight coordination, from first request to final delivery.</p></div>
+    <div><Wordmark /><p>Global consignment & logistics, from first request to final delivery.</p></div>
     <div><h4>Explore</h4><Link href="/services">Services</Link><Link href="/about">About</Link><Link href="/tracking">Track a shipment</Link><Link href="/quote">Request a quote</Link></div>
     <div><h4>Connect</h4><Link href="/contact">Contact</Link>{settings.data?.companyEmail ? <a href={`mailto:${settings.data.companyEmail}`}>{settings.data.companyEmail}</a> : <p>Company email not configured</p>}<p>{settings.data?.companyPhone || 'Phone not configured'}</p></div>
-    <div><h4>Information</h4><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/cookie-policy">Cookie policy</Link><Link href="/sign-in">Customer portal</Link></div>
+    <div><h4>Information</h4><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/cookie-policy">Cookie policy</Link></div>
   </div><div className="footer-bottom"><span>© {new Date().getFullYear()} {company}</span><span>Operational information, made clear.</span></div></footer>;
 }
 function PublicShell({ children }: { children: ReactNode }) { return <div className="site-wrap"><Header />{children}<Footer /></div>; }
 function Eyebrow({ children }: { children: ReactNode }) { return <div className="eyebrow">{children}</div>; }
-function PageHead({ title, body, eyebrow = 'Freight operations' }: { title: string; body: string; eyebrow?: string }) {
+function PageHead({ title, body, eyebrow = 'GLO-PAX' }: { title: string; body: string; eyebrow?: string }) {
   return <section className="page-head"><div className="page-head-inner"><Eyebrow>{eyebrow}</Eyebrow><h1>{title}</h1><p>{body}</p></div></section>;
 }
 function ErrorNotice({ message = 'We could not load this information.', retry }: { message?: string; retry?: () => void }) {
@@ -190,7 +190,7 @@ function ServiceDetail({ slug }: { slug?: string }) {
   const site = useGetSiteSettings();
   const s = (site.data?.services || serviceLinks).find(item => item.slug === slug);
   if (!slug || !s) return <PublicShell><PageHead title="Service not found" body="This service may not be configured. Browse the available services or contact the team for details." eyebrow="Services" /><div className="content"><Link href="/services" className="btn btn-primary">Browse services</Link></div></PublicShell>;
-  return <PublicShell><PageHead title={s.title} body={s.description} eyebrow="Service / Freight operations" /><div className="content"><div className="legal-copy"><h2>Designed around the shipment</h2><p>Share the origin, destination, shipment type, and handling requirements. The operations team can review the information and follow up with the next appropriate steps.</p><h2>Start with the details</h2><p>Service availability and terms should be confirmed for each request. No transit time, coverage, or performance claims are implied on this page.</p></div><div className="form-actions"><Link href="/quote" className="btn btn-primary" data-testid={`link-quote-${slug}`}>Request a quote <ArrowRight size={15} /></Link><Link href="/contact" className="btn btn-outline">Ask a question</Link></div></div></PublicShell>;
+  return <PublicShell><PageHead title={s.title} body={s.description} eyebrow="Service / GLO-PAX" /><div className="content"><div className="legal-copy"><h2>Designed around the shipment</h2><p>Share the origin, destination, shipment type, and handling requirements. The operations team can review the information and follow up with the next appropriate steps.</p><h2>Start with the details</h2><p>Service availability and terms should be confirmed for each request. No transit time, coverage, or performance claims are implied on this page.</p></div><div className="form-actions"><Link href="/quote" className="btn btn-primary" data-testid={`link-quote-${slug}`}>Request a quote <ArrowRight size={15} /></Link><Link href="/contact" className="btn btn-outline">Ask a question</Link></div></div></PublicShell>;
 }
 
 function TrackingPage() {
@@ -270,7 +270,7 @@ function LegalPage({ slug }: { slug: string }) {
 function ClerkSignIn() { return <AuthFrame><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></AuthFrame>; }
 function ClerkSignUp() { return <AuthFrame><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></AuthFrame>; }
 function AuthFrame({ children }: { children: ReactNode }) {
-  return <div className="site-wrap" style={{ minHeight: '100dvh', background: '#eae3d7' }}><div className="topbar"><Link href="/" data-testid="link-home"><Wordmark /></Link><Link href="/" className="text-link">Back to home <ArrowRight size={14} /></Link></div><main style={{ padding: '30px 18px 70px', display: 'grid', placeItems: 'center' }}><div style={{ textAlign: 'center', marginBottom: 20 }}><Eyebrow>Freight operations workspace</Eyebrow><h1 className="font-display" style={{ color: '#20384c', fontSize: 30, letterSpacing: '-.05em', margin: '14px 0 6px' }}>Your work, in motion.</h1><p style={{ color: '#64727a', fontSize: 13 }}>Sign in to reach your shipment and operations workspace.</p></div>{children}</main></div>;
+  return <div className="site-wrap" style={{ minHeight: '100dvh', background: '#eae3d7' }}><div className="topbar"><Link href="/" data-testid="link-home"><Wordmark /></Link><Link href="/" className="text-link">Back to home <ArrowRight size={14} /></Link></div><main style={{ padding: '30px 18px 70px', display: 'grid', placeItems: 'center' }}><div style={{ textAlign: 'center', marginBottom: 20 }}><Eyebrow>GLO-PAX workspace</Eyebrow><h1 className="font-display" style={{ color: '#20384c', fontSize: 30, letterSpacing: '-.05em', margin: '14px 0 6px' }}>Your work, in motion.</h1><p style={{ color: '#64727a', fontSize: 13 }}>Sign in to reach your shipment and operations workspace.</p></div>{children}</main></div>;
 }
 function ClerkCacheInvalidator() {
   const { addListener } = useClerk();

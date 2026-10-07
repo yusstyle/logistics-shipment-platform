@@ -5,8 +5,8 @@ export default function NotFound() {
   return (
     <main className="not-found" data-testid="page-not-found">
       <Link href="/" className="wordmark" data-testid="link-not-found-home">
-        <span className="mark" aria-hidden="true"><Compass size={18} /></span>
-        <span>Freight operations</span>
+        <img className="wordmark-logo" src="/logo.svg" alt="GLO-PAX" aria-label="GLO-PAX" />
+        <span>GLO-PAX</span>
       </Link>
       <div className="not-found-content">
         <span className="eyebrow">Route not found</span>
