@@ -104,7 +104,7 @@ button { cursor: pointer; }
 .site-wrap { min-height: 100dvh; overflow: clip; }
 .topbar { height: 76px; display:flex; align-items:center; justify-content:space-between; max-width:1440px; margin:auto; padding:0 5vw; }
 .wordmark { display:flex; align-items:center; gap:12px; font:800 16px var(--app-font-display); letter-spacing:-.045em; color:#213a50; }
-.wordmark-logo { width:38px; height:38px; object-fit:contain; border-radius:9px; box-shadow:0 5px 14px #213a5020; }
+.wordmark-logo { height:40px; width:auto; max-width:180px; object-fit:contain; display:block; }
 .nav-links { display:flex; align-items:center; gap:30px; color:#56636c; font-size:13px; font-weight:600; }
 .nav-links a:hover { color:hsl(var(--accent)); }
 .header-actions { display:flex; align-items:center; gap:12px; }
@@ -167,6 +167,7 @@ button { cursor: pointer; }
 .band-copy p { color:#596a73; max-width:570px; line-height:1.8; font-size:14px; }
 .band-copy .btn { margin-top:18px; }
 .footer { background:#1f374a; color:#f3eee5; padding:54px 5vw 28px; }
+.footer .wordmark-logo { height:40px; width:auto; max-width:180px; background:#ffffff; padding:5px 10px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.18); margin-bottom:14px; }
 .footer-inner { max-width:1240px; margin:auto; display:grid; grid-template-columns:1.7fr repeat(3,1fr); gap:35px; }
 .footer h4 { font:700 11px var(--app-font-mono); color:#d69475; text-transform:uppercase; letter-spacing:.1em; margin:0 0 16px; }
 .footer a,.footer p { display:block; color:#c4cfce; font-size:12px; line-height:2.2; }
@@ -206,7 +207,8 @@ button { cursor: pointer; }
 .empty-state strong { display:block; color:#304958; font:700 17px var(--app-font-display); margin-bottom:8px; }
 .dashboard-shell { min-height:100dvh; display:grid; grid-template-columns:250px 1fr; background:#f4f0e8; }
 .dash-side { background:#213a50; color:#ebeee9; padding:23px 16px; display:flex; flex-direction:column; min-height:100dvh; }
-.dash-side .wordmark { padding:5px 10px 27px; color:#f4efe6; }
+.dash-side .wordmark { padding:5px 6px 24px; color:#f4efe6; }
+.dash-side .wordmark-logo { height:38px; width:auto; max-width:170px; background:#ffffff; padding:5px 10px; border-radius:8px; box-shadow:0 3px 10px rgba(0,0,0,0.18); }
 .dash-label { margin:20px 11px 9px; color:#9eb0b5; font:500 9px var(--app-font-mono); letter-spacing:.13em; text-transform:uppercase; }
 .dash-nav { display:grid; gap:4px; }
 .dash-nav a { min-height:40px; border-radius:5px; display:flex; align-items:center; gap:11px; padding:0 11px; color:#c1cdca; font-size:12px; font-weight:600; }
@@ -295,7 +297,7 @@ button { cursor: pointer; }
   .section { padding:65px 22px; }.section-heading { align-items:start; flex-direction:column; gap:5px; }.service-grid { grid-template-columns:1fr; gap:10px; }.service-card { min-height:170px; }.split-band { grid-template-columns:1fr; }.band-image { min-height:210px; }.band-copy { padding:42px 25px; }
   .footer { padding:42px 22px 24px; }.footer-inner { grid-template-columns:1fr 1fr; }.footer-inner>div:first-child { grid-column:1/-1; }.footer-inner>div:last-child { display:block; }.footer-bottom { margin-top:25px; }
   .page-head { padding:48px 22px 42px; }.content { padding:30px 18px 60px; }.form-card { padding:21px 17px; }.form-grid { grid-template-columns:1fr; }.field.full { grid-column:auto; }
-  .dashboard-shell { display:block; }.dash-side { min-height:auto; padding:12px 14px; flex-direction:row; align-items:center; gap:8px; overflow-x:auto; }.dash-side .wordmark { padding:0 10px 0 0; white-space:nowrap; }.dash-side .wordmark-logo { width:30px;height:30px; }.dash-label,.dash-foot { display:none; }.dash-nav { display:flex; gap:2px; }.dash-nav a { white-space:nowrap; padding:0 10px; min-height:36px; }.dash-main { min-height:calc(100dvh - 58px); }.dash-top { height:55px; padding:0 18px; }.dash-body { padding:24px 16px 50px; }.dash-heading { align-items:start; flex-direction:column; }.dash-heading h1 { font-size:26px; }.dash-columns { grid-template-columns:1fr; }.panel { padding:16px; }.metric-grid { gap:9px; }.metric { padding:14px; }.metric strong { font-size:24px; }
+  .dashboard-shell { display:block; }.dash-side { min-height:auto; padding:12px 14px; flex-direction:row; align-items:center; gap:8px; overflow-x:auto; }.dash-side .wordmark { padding:0 10px 0 0; white-space:nowrap; }.dash-side .wordmark-logo { height:28px; width:auto; max-width:130px; padding:3px 7px; }.dash-label,.dash-foot { display:none; }.dash-nav { display:flex; gap:2px; }.dash-nav a { white-space:nowrap; padding:0 10px; min-height:36px; }.dash-main { min-height:calc(100dvh - 58px); }.dash-top { height:55px; padding:0 18px; }.dash-body { padding:24px 16px 50px; }.dash-heading { align-items:start; flex-direction:column; }.dash-heading h1 { font-size:26px; }.dash-columns { grid-template-columns:1fr; }.panel { padding:16px; }.metric-grid { gap:9px; }.metric { padding:14px; }.metric strong { font-size:24px; }
   .mobile-menu { display:inline-flex; }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -46,7 +46,7 @@ const appearance = {
   options: {
     logoPlacement: 'inside' as const,
     logoLinkUrl: basePath || '/',
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+    logoImageUrl: `${window.location.origin}${basePath}/logo.png`,
   },
   variables: {
     colorPrimary: '#213a50', colorForeground: '#263d4e', colorMutedForeground: '#6d7a80',
@@ -104,7 +104,12 @@ const adminNav: { label: string; href: string; icon: IconType }[] = [
 ];
 
 function Wordmark() {
-  return <span className="wordmark" data-testid="text-brand"><img className="wordmark-logo" src={`${basePath}/logo.svg`} alt="GLO-PAX" aria-label="GLO-PAX" /><span>GLO-PAX</span></span>;
+  return (
+    <span className="wordmark" data-testid="text-brand">
+      <img className="wordmark-logo" src={`${basePath}/logo.png`} alt="GLO-PAX" aria-label="GLO-PAX" />
+      <span className="sr-only">GLO-PAX</span>
+    </span>
+  );
 }
 function Header() {
   return <header className="topbar">
