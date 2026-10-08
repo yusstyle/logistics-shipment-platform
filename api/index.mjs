@@ -63478,6 +63478,10 @@ router.post("/admin/shipments", ...adminOnly, async (req, res, next) => {
     const shipment = await db.transaction(async (tx) => {
       const [created] = await tx.insert(shipmentsTable).values({
         ...input,
+        carrier: input.carrier?.trim() || null,
+        carrierTrackingNumber: input.carrierTrackingNumber?.trim() || null,
+        dimensions: input.dimensions?.trim() || null,
+        packageDescription: input.packageDescription?.trim() || null,
         trackingNumber: makeTrackingNumber(),
         weight: input.weight == null ? null : String(input.weight),
         estimatedDelivery: dateToSql(input.estimatedDelivery)

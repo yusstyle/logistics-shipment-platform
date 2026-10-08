@@ -1,4 +1,4 @@
-﻿import { randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import {
   and,
   count,
@@ -236,6 +236,10 @@ router.post("/admin/shipments", ...adminOnly, async (req, res, next) => {
         .insert(shipmentsTable)
         .values({
           ...input,
+          carrier: input.carrier?.trim() || null,
+          carrierTrackingNumber: input.carrierTrackingNumber?.trim() || null,
+          dimensions: input.dimensions?.trim() || null,
+          packageDescription: input.packageDescription?.trim() || null,
           trackingNumber: makeTrackingNumber(),
           weight: input.weight == null ? null : String(input.weight),
           estimatedDelivery: dateToSql(input.estimatedDelivery),

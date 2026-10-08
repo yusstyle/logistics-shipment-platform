@@ -22,6 +22,7 @@ import {
   getGetAdminDashboardQueryKey, getGetAdminQuotesQueryKey, getGetAdminShipmentQueryKey,
   getGetAdminShipmentsQueryKey, getGetAdminUsersQueryKey, getGetCurrentUserQueryKey,
   getGetCustomerNotificationsQueryKey, getGetPublicTrackingQueryKey, getGetSiteSettingsQueryKey,
+  setAuthTokenGetter,
 } from '@workspace/api-client-react';
 import type {
   Contact, Quote, Shipment, SiteSettingsUpdate, TrackingEventInput,
@@ -134,6 +135,24 @@ function PageHead({ title, body, eyebrow = 'GLO-PAX' }: { title: string; body: s
 }
 function ErrorNotice({ message = 'We could not load this information.', retry }: { message?: string; retry?: () => void }) {
   return <div className="notice error" role="alert">{message} {retry && <button className="text-link" onClick={retry} data-testid="button-retry">Try again</button>}</div>;
+}
+function getMutationErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const errObj = error as {
+      data?: { error?: string; details?: Array<{ field?: string; message: string }> };
+      message?: string;
+    };
+    if (errObj.data?.details && errObj.data.details.length > 0) {
+      return `${errObj.data.error || 'Validation error'}: ${errObj.data.details.map(d => `${d.field ? d.field + ': ' : ''}${d.message}`).join(', ')}`;
+    }
+    if (errObj.data?.error) {
+      return errObj.data.error;
+    }
+    if (errObj.message?.trim()) {
+      return errObj.message;
+    }
+  }
+  return 'The request could not be completed. Please review the form and try again.';
 }
 function LoadingBlock() { return <div className="skeleton" aria-label="Loading" role="status" />; }
 function Empty({ title, body }: { title: string; body: string }) {
@@ -286,6 +305,23 @@ function ClerkCacheInvalidator() {
   }, [addListener, cache]);
   return null;
 }
+function ClerkTokenSync() {
+  const { getToken, isSignedIn } = useAuth();
+  useEffect(() => {
+    if (isSignedIn) {
+      setAuthTokenGetter(async () => {
+        try {
+          return await getToken();
+        } catch {
+          return null;
+        }
+      });
+    } else {
+      setAuthTokenGetter(null);
+    }
+  }, [getToken, isSignedIn]);
+  return null;
+}
 function LogoutButton() {
   const { signOut } = useClerk();
   return <button className="btn btn-quiet" type="button" onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="button-sign-out">Sign out</button>;
@@ -421,12 +457,81 @@ function AdminShipments() {
 }
 function CreateShipmentPage() {
   const create = useCreateShipment();
+  const customers = useGetAdminCustomers();
   const cache = useQueryClient();
   const [, setLocation] = useLocation();
   return <DashboardFrame admin><DashHeading title="Create shipment" sub="Create an operational record. Fields marked required must be provided." action={<Link href="/admin/shipments" className="btn btn-outline">Cancel</Link>} />
-    <form className="form-card" onSubmit={e => { e.preventDefault(); const f = new FormData(e.currentTarget); create.mutate({ data: { serviceType: String(f.get('serviceType')), origin: String(f.get('origin')), destination: String(f.get('destination')), status: String(f.get('status') || 'pending'), customerId: f.get('customerId') ? Number(f.get('customerId')) : null, carrier: String(f.get('carrier') || ''), carrierTrackingNumber: String(f.get('carrierTrackingNumber') || ''), weight: f.get('weight') ? Number(f.get('weight')) : null, dimensions: String(f.get('dimensions') || ''), packageDescription: String(f.get('packageDescription') || ''), estimatedDelivery: String(f.get('estimatedDelivery') || '') || null } }, { onSuccess: shipment => { cache.invalidateQueries({ queryKey: getGetAdminShipmentsQueryKey() }); cache.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); setLocation(`/admin/shipments/${shipment.id}`); } }); }} data-testid="form-create-shipment">
-      <div className="form-grid"><Field label="Service type" name="serviceType" required placeholder="Air freight, ocean freight…" /><Field label="Customer ID (optional)" name="customerId" type="number" min="1" /><Field label="Origin" name="origin" required /><Field label="Destination" name="destination" required /><Field label="Current status" name="status" placeholder="pending" /><Field label="Carrier" name="carrier" /><Field label="Carrier tracking number" name="carrierTrackingNumber" /><Field label="Weight (kg)" name="weight" type="number" min="0" /><Field label="Dimensions" name="dimensions" /><Field label="Estimated delivery" name="estimatedDelivery" type="date" /><Field label="Package description" name="packageDescription" textarea /></div>
-      {create.isError && <ErrorNotice message="Shipment record could not be created. Review the details and try again." />}
+    <form className="form-card" onSubmit={e => {
+      e.preventDefault();
+      const f = new FormData(e.currentTarget);
+      const serviceType = String(f.get('serviceType') || '').trim();
+      const origin = String(f.get('origin') || '').trim();
+      const destination = String(f.get('destination') || '').trim();
+      const status = String(f.get('status') || '').trim() || 'pending';
+      const custId = f.get('customerId');
+      const customerId = custId && String(custId).trim() ? Number(custId) : null;
+      const carrier = String(f.get('carrier') || '').trim() || null;
+      const carrierTrackingNumber = String(f.get('carrierTrackingNumber') || '').trim() || null;
+      const weightVal = f.get('weight');
+      const weight = weightVal !== null && weightVal !== '' && !Number.isNaN(Number(weightVal)) ? Number(weightVal) : null;
+      const dimensions = String(f.get('dimensions') || '').trim() || null;
+      const packageDescription = String(f.get('packageDescription') || '').trim() || null;
+      const estVal = f.get('estimatedDelivery');
+      const estimatedDelivery = estVal && String(estVal).trim() ? String(estVal).trim() : null;
+
+      create.mutate({
+        data: {
+          serviceType,
+          origin,
+          destination,
+          status,
+          customerId,
+          carrier,
+          carrierTrackingNumber,
+          weight,
+          dimensions,
+          packageDescription,
+          estimatedDelivery,
+        }
+      }, {
+        onSuccess: shipment => {
+          cache.invalidateQueries({ queryKey: getGetAdminShipmentsQueryKey() });
+          cache.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() });
+          setLocation(`/admin/shipments/${shipment.id}`);
+        }
+      });
+    }} data-testid="form-create-shipment">
+      <div className="form-grid">
+        <Field label="Service type" name="serviceType" required placeholder="Air freight, ocean freight…" />
+        <div className="field">
+          <label htmlFor="field-customerId">Customer (optional)</label>
+          <select id="field-customerId" name="customerId" data-testid="select-customer">
+            <option value="">Unassigned (No customer)</option>
+            {customers.data?.map(c => (
+              <option key={c.id} value={c.id}>{c.name} ({c.email})</option>
+            ))}
+          </select>
+        </div>
+        <Field label="Origin" name="origin" required />
+        <Field label="Destination" name="destination" required />
+        <div className="field">
+          <label htmlFor="field-status">Current status</label>
+          <select id="field-status" name="status" defaultValue="pending" data-testid="select-shipment-status">
+            <option value="pending">Pending</option>
+            <option value="in_transit">In transit</option>
+            <option value="delayed">Delayed</option>
+            <option value="exception">Exception</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </div>
+        <Field label="Carrier" name="carrier" />
+        <Field label="Carrier tracking number" name="carrierTrackingNumber" />
+        <Field label="Weight (kg)" name="weight" type="number" min="0" />
+        <Field label="Dimensions" name="dimensions" />
+        <Field label="Estimated delivery" name="estimatedDelivery" type="date" />
+        <Field label="Package description" name="packageDescription" textarea />
+      </div>
+      {create.isError && <ErrorNotice message={getMutationErrorMessage(create.error)} />}
       <div className="notice info">A tracking reference is generated by the operations API. Do not use unverified sample records.</div>
       <div className="form-actions"><button className="btn btn-primary" disabled={create.isPending} type="submit" data-testid="button-create-shipment">{create.isPending ? 'Creating…' : 'Create shipment'} <ArrowRight size={15} /></button></div>
     </form>
@@ -555,6 +660,7 @@ function ClerkRoutes() {
     routerReplace={(to: string) => setLocation(stripBase(to), { replace: true })}
   >
     <ClerkCacheInvalidator />
+    <ClerkTokenSync />
     <Switch>
       <Route path="/" component={HomeRedirect} />
       <Route path="/sign-in/*?" component={ClerkSignIn} />
