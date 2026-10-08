@@ -25,10 +25,11 @@ async function synchronizeUser(clerkUserId: string): Promise<User> {
   }
 
   const email = primaryEmail.emailAddress.trim().toLowerCase();
-  const trustedBootstrapEmail = process.env.BOOTSTRAP_ADMIN_EMAIL
-    ?.trim()
-    .toLowerCase();
-  const promoteToSuperAdmin = trustedBootstrapEmail === email;
+  const trustedBootstrapEmails = (process.env.BOOTSTRAP_ADMIN_EMAIL || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const promoteToSuperAdmin = trustedBootstrapEmails.includes(email);
   const existing = await db.query.usersTable.findFirst({
     where: eq(usersTable.clerkUserId, clerkUserId),
   });
