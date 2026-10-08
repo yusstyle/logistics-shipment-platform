@@ -1,7 +1,12 @@
 import { build } from "esbuild";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 await build({
-  entryPoints: ["src/vercel.ts"],
-  outfile: "../../api/index.mjs",
+  entryPoints: [resolve(__dirname, "src/vercel.ts")],
+  outfile: resolve(__dirname, "../../api/index.mjs"),
   bundle: true,
   platform: "node",
   format: "esm",

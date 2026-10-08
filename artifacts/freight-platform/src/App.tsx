@@ -218,10 +218,17 @@ function ServiceDetail({ slug }: { slug?: string }) {
 }
 
 function TrackingPage() {
-  const params = new URLSearchParams(window.location.search);
-  const [number, setNumber] = useState(params.get('number') || '');
-  const [lookup, setLookup] = useState(params.get('number') || '');
-  const tracking = useGetPublicTracking(lookup, { query: { enabled: !!lookup, queryKey: getGetPublicTrackingQueryKey(lookup) } });
+  const [location] = useLocation();
+  const [number, setNumber] = useState(() => new URLSearchParams(window.location.search).get('number') || '');
+  const [lookup, setLookup] = useState(() => new URLSearchParams(window.location.search).get('number') || '');
+  useEffect(() => {
+    const urlNum = new URLSearchParams(window.location.search).get('number') || '';
+    if (urlNum && urlNum !== lookup) {
+      setNumber(urlNum);
+      setLookup(urlNum);
+    }
+  }, [location]);
+  const tracking = useGetPublicTracking(lookup.trim(), { query: { enabled: !!lookup.trim(), queryKey: getGetPublicTrackingQueryKey(lookup.trim()) } });
   function submit(e: FormEvent) { e.preventDefault(); setLookup(number.trim()); }
   return <PublicShell><PageHead title="Tracking, without guesswork." body="Enter a shipment tracking number to view the most recent available status and event history." eyebrow="Shipment visibility" />
     <div className="content"><form className="form-card" onSubmit={submit}><div className="field"><label htmlFor="track-number">Tracking number</label><div className="track-form"><input id="track-number" value={number} onChange={e => setNumber(e.target.value)} required placeholder="Enter tracking number" data-testid="input-tracking-number" /><button className="btn btn-primary" type="submit" disabled={tracking.isFetching} data-testid="button-track">Look up <Search size={15} /></button></div></div></form>

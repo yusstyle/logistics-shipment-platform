@@ -34,6 +34,13 @@ app.use(
     },
   }),
 );
+app.use((req, _res, next) => {
+  const matchedPath = req.headers["x-matched-path"] || req.headers["x-invoke-path"];
+  if (typeof matchedPath === "string" && matchedPath.startsWith("/api") && req.url === "/api") {
+    req.url = matchedPath;
+  }
+  next();
+});
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 app.use(cors({ credentials: true, origin: true }));
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -46,16 +53,21 @@ app.use(
   }),
 );
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  clerkMiddleware((req) => ({
+app.use((req, res, next) => {
+  if (!process.env.CLERK_SECRET_KEY) {
+    return next();
+  }
+  return clerkMiddleware((req) => ({
     publishableKey: publishableKeyFromHost(
       getClerkProxyHost(req) ?? "",
       process.env.CLERK_PUBLISHABLE_KEY,
     ),
-  })),
-);
+    secretKey: process.env.CLERK_SECRET_KEY,
+  }))(req, res, next);
+});
 
 app.use("/api", router);
+app.use(router);
 
 app.use((error: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (res.headersSent) {

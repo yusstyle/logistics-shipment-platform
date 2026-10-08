@@ -3,10 +3,7 @@
   "buildCommand": "cd artifacts/freight-platform && pnpm run build",
   "outputDirectory": "artifacts/freight-platform/dist/public",
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://freight-platform-mu.vercel.app/api/$1"
-    },
+    { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
