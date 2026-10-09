@@ -182,14 +182,34 @@ function Home() {
   const services = site.data?.services?.length ? site.data.services : serviceLinks;
   return <PublicShell><main>
     <section className="hero"><div className="hero-copy"><Eyebrow>Logistics, made legible</Eyebrow><h1>Move goods.<br /><em>Know where.</em></h1><p>{site.data?.companyDescription || 'A direct line between your shipment and the people coordinating it. Find a service, request a quote, or follow a shipment in progress.'}</p><div className="hero-actions"><Link href="/quote" className="btn btn-primary" data-testid="link-hero-quote">Plan a shipment <ArrowRight size={15} /></Link><Link href="/services" className="btn btn-outline" data-testid="link-hero-services">Explore services</Link></div></div>
-      <div className="hero-art" aria-label="Illustration of a shipment moving between two locations"><div className="route-art"><div className="route-line" /><span className="route-point start" /><span className="route-point end" /><span className="route-label origin">Origin</span><span className="route-label destination">Destination</span><div className="route-cargo" /><div className="cargo-tag" /><span className="art-caption">MOVEMENT, MADE VISIBLE</span></div></div>
+      <div className="hero-art" aria-label="Global freight and intermodal port logistics">
+        <div className="hero-badge-float">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="badge good">Active Network</span>
+            <span style={{ fontSize: 11, color: '#0097b2', fontWeight: 700 }}>LIVE OPERATIONS</span>
+          </div>
+          <strong>Global Consignment & Freight</strong>
+          <span className="sub">AIR · OCEAN · ROAD · CUSTOMS</span>
+        </div>
+      </div>
     </section>
     <div className="track-bar"><div className="track-surface"><div><h2>Already on the move?</h2><p>Enter a tracking number to view the latest available updates.</p></div><TrackForm compact /></div></div>
     <section className="section"><div className="section-inner"><div className="section-heading"><div><Eyebrow>How we can help</Eyebrow><h2>One coordinated journey.<br />The right mode at each step.</h2></div><p>Explore services that can be configured to suit the shape, schedule, and handling needs of your freight.</p></div>
       {site.isLoading ? <LoadingBlock /> : site.isError ? <ErrorNotice message="Service information is temporarily unavailable." retry={() => site.refetch()} /> :
         <div className="service-grid">{services.slice(0, 6).map((service, i) => <Link className="service-card" href={`/services/${service.slug}`} key={service.slug} data-testid={`card-service-${service.slug}`}><span className="service-number">0{i + 1} / SERVICE</span><h3>{service.title}</h3><p>{service.description}</p><span className="text-link">View service <ArrowRight size={14} /></span></Link>)}</div>}
     </div></section>
-    <section className="split-band"><div className="band-image" role="img" aria-label="Abstract stacked freight cargo illustration" /><div className="band-copy"><Eyebrow>Visibility with context</Eyebrow><h2>A clear record at every handoff.</h2><p>Operational updates bring shipment status, location, and event history into one view. When provider data is not configured, the platform labels the source clearly rather than filling gaps with assumptions.</p><Link href="/tracking" className="btn btn-primary" data-testid="link-band-tracking">Open tracking <ArrowRight size={15} /></Link></div></section>
+    <section className="split-band"><div className="band-image" role="img" aria-label="Operations dock team coordinating freight handoff" /><div className="band-copy"><Eyebrow>Visibility with context</Eyebrow><h2>A clear record at every handoff.</h2><p>Operational updates bring shipment status, location, and event history into one view. When provider data is not configured, the platform labels the source clearly rather than filling gaps with assumptions.</p><Link href="/tracking" className="btn btn-primary" data-testid="link-band-tracking">Open tracking <ArrowRight size={15} /></Link></div></section>
+    <section className="panorama-band">
+      <div className="panorama-content">
+        <span className="eyebrow">Precision Handling</span>
+        <h2>Consignment & Cargo, Coordinated Without Compromise.</h2>
+        <p>From dockside receipt to ramp handover and final warehouse delivery, GLO-PAX connects every milestone with verified precision.</p>
+        <div className="hero-actions" style={{ justifyContent: 'center' }}>
+          <Link href="/quote" className="btn btn-accent">Request a quote <ArrowRight size={15} /></Link>
+          <Link href="/tracking" className="btn btn-outline-white">Track consignment</Link>
+        </div>
+      </div>
+    </section>
     <section className="section"><div className="section-inner"><div className="section-heading"><div><Eyebrow>Start with the next step</Eyebrow><h2>Plan it. Follow it.<br />Get the details when you need them.</h2></div></div><div className="service-grid">
       <div className="service-card"><span className="service-number">01 / PLAN</span><h3>Share the shipment details</h3><p>Tell us where it starts, where it is going, and what needs to move.</p><Link href="/quote" className="text-link" data-testid="link-plan">Request a quote <ArrowRight size={14} /></Link></div>
       <div className="service-card"><span className="service-number">02 / FOLLOW</span><h3>Check the latest update</h3><p>Track a shipment using its reference number and review its event timeline.</p><Link href="/tracking" className="text-link" data-testid="link-follow">Go to tracking <ArrowRight size={14} /></Link></div>
@@ -301,7 +321,7 @@ function LegalPage({ slug }: { slug: string }) {
 function ClerkSignIn() { return <AuthFrame><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></AuthFrame>; }
 function ClerkSignUp() { return <AuthFrame><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></AuthFrame>; }
 function AuthFrame({ children }: { children: ReactNode }) {
-  return <div className="site-wrap" style={{ minHeight: '100dvh', background: '#eae3d7' }}><div className="topbar"><Link href="/" data-testid="link-home"><Wordmark /></Link><Link href="/" className="text-link">Back to home <ArrowRight size={14} /></Link></div><main style={{ padding: '30px 18px 70px', display: 'grid', placeItems: 'center' }}><div style={{ textAlign: 'center', marginBottom: 20 }}><Eyebrow>GLO-PAX workspace</Eyebrow><h1 className="font-display" style={{ color: '#20384c', fontSize: 30, letterSpacing: '-.05em', margin: '14px 0 6px' }}>Your work, in motion.</h1><p style={{ color: '#64727a', fontSize: 13 }}>Sign in to reach your shipment and operations workspace.</p></div>{children}</main></div>;
+  return <div className="site-wrap auth-wrap"><div className="topbar"><Link href="/" data-testid="link-home"><Wordmark /></Link><Link href="/" className="text-link">Back to home <ArrowRight size={14} /></Link></div><main style={{ padding: '30px 18px 70px', display: 'grid', placeItems: 'center' }}><div style={{ textAlign: 'center', marginBottom: 20 }}><Eyebrow>GLO-PAX workspace</Eyebrow><h1 className="font-display" style={{ fontSize: 30, letterSpacing: '-.05em', margin: '14px 0 6px' }}>Your work, in motion.</h1><p style={{ fontSize: 13 }}>Sign in to reach your shipment and operations workspace.</p></div>{children}</main></div>;
 }
 function ClerkCacheInvalidator() {
   const { addListener } = useClerk();
